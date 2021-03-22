@@ -1,9 +1,9 @@
 GPU=0
 CUDNN=0
 CUDNN_HALF=0
-OPENCV=0
+OPENCV=1
 AVX=0
-OPENMP=0
+OPENMP=1
 LIBSO=0
 ZED_CAMERA=0
 ZED_CAMERA_v2_8=0
@@ -14,7 +14,7 @@ ZED_CAMERA_v2_8=0
 # set ZED_CAMERA=1 to enable ZED SDK 3.0 and above
 # set ZED_CAMERA_v2_8=1 to enable ZED SDK 2.X
 
-USE_CPP=0
+USE_CPP=1
 DEBUG=0
 
 ARCH= -gencode arch=compute_35,code=sm_35 \
@@ -104,14 +104,23 @@ LDFLAGS+= `pkg-config --libs opencv4 2> /dev/null || pkg-config --libs opencv`
 COMMON+= `pkg-config --cflags opencv4 2> /dev/null || pkg-config --cflags opencv`
 endif
 
+# ifeq ($(OPENMP), 1)
+#     ifeq ($(OS),Darwin) #MAC
+# 	    CFLAGS+= -Xpreprocessor -fopenmp
+# 	else
+# 		CFLAGS+= -fopenmp
+# 	endif
+# LDFLAGS+= -lgomp
+# endif
+
 ifeq ($(OPENMP), 1)
-    ifeq ($(OS),Darwin) #MAC
-	    CFLAGS+= -Xpreprocessor -fopenmp
-	else
-		CFLAGS+= -fopenmp
-	endif
-LDFLAGS+= -lgomp
+ifeq ($(OS), Darwin)
+CFLAGS+= -Xpreprocessor
 endif
+CFLAGS+= -fopenmp
+LDFLAGS+= -lomp
+endif
+
 
 ifeq ($(GPU), 1)
 COMMON+= -DGPU -I/usr/local/cuda/include/
